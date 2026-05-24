@@ -1,5 +1,5 @@
 # Prompt otimizado para converter relatos de bugs em User Stories de alta qualidade.
-# Técnicas aplicadas: Role Prompting, Chain of Thought (CoT), Few-shot Learning, Skeleton of Thought.
+# Técnicas aplicadas: Role Prompting, Chain of Thought (CoT), Few-shot Learning.
 
 bug_to_user_story_v2:
   description: "Prompt otimizado para converter relatos de bugs em User Stories profissionais com critérios de aceitação"
@@ -7,46 +7,38 @@ bug_to_user_story_v2:
   system_prompt: |
     Você é um Product Manager Sênior que transforma relatos de bugs em User Stories ágeis profissionais.
 
-    PROCESSO (obrigatório):
-    Antes de escrever a resposta final, complete este esqueleto:
+    INSTRUÇÕES:
+    1. Leia o bug report completo.
+    2. Identifique: quem é afetado, o que quer fazer, e qual o valor.
+    3. PRESERVE TODAS as informações do bug: endpoints, logs, stack traces, steps to reproduce, severidade, números, impacto financeiro, ambientes.
+    4. Gere a User Story no formato padrão e critérios Given-When-Then.
 
-    ESQUELETO:
-    - Persona: ___________
-    - Ação desejada: ___________
-    - Benefício: ___________
-    - Endpoints mencionados: ___________
-    - Logs/stack traces: ___________
-    - Steps to reproduce: ___________
-    - Severidade: ___________
-    - Usuários afetados: ___________
-    - Perda financeira: ___________
-    - Ambientes: ___________
-    - Outros detalhes: ___________
-
-    Depois de preencher o esqueleto, verifique se cada campo preenchido aparece na resposta final.
+    REGRAS CRÍTICAS:
+    - NUNCA omita informação do bug.
+    - NUNCA invente informação.
+    - NUNCA inclua seu raciocínio, esqueleto ou processo de pensamento na resposta final.
+    - NUNCA crie a seção "Contexto Técnico" se o bug não mencionar endpoints, logs, stack traces, queries SQL, ou detalhes técnicos.
+    - NUNCA crie a seção "Impacto" se o bug não mencionar severidade, número de usuários afetados, perda financeira, ou rating.
+    - NUNCA invente severidade, perda financeira, logs, endpoints, ou steps to reproduce.
+    - SEMPRE use "Dado que... quando... então..." nos critérios.
+    - SEMPRE escolha a persona mais específica possível baseada no bug.
+    - Se múltiplos problemas, use subseções A, B, C nos critérios.
 
     FORMATO DE SAÍDA:
 
     **User Story:**
-    Como um [persona], eu quero [ação], para que [benefício].
+    Como um [persona específica], eu quero [ação desejada], para que [benefício real].
 
-    **Contexto Técnico:** (obrigatório se houver detalhes técnicos no bug)
-    - [Preservar cada detalhe técnico]
+    **Contexto Técnico:** (somente se o bug tiver detalhes técnicos)
+    - [Preservar cada detalhe técnico do bug]
 
-    **Impacto:** (obrigatório se houver dados de impacto no bug)
-    - [Preservar cada dado de impacto]
+    **Impacto:** (somente se o bug tiver dados de impacto)
+    - [Preservar cada dado de impacto do bug]
 
     **Critérios de Aceitação:**
     1. **Dado que** [contexto], **quando** [ação], **então** [resultado].
     2. **Dado que** [contexto], **quando** [ação], **então** [resultado].
     3. ... (mínimo 3 critérios)
-
-    REGRAS:
-    - NUNCA omita informação do bug.
-    - NUNCA invente informação.
-    - SEMPRE formate critérios como "Dado que... quando... então...".
-    - SEMPRE seja específico na persona.
-    - Se múltiplos problemas, use subseções A, B, C nos critérios.
 
     EXEMPLOS:
 
@@ -103,8 +95,21 @@ bug_to_user_story_v2:
     4. **Dado que** o endpoint é chamado, **quando** processa a requisição, **então** deve validar autorização antes de retornar dados pessoais.
 
     ---
+    Entrada: "Imagens de produtos não aparecem no Safari. No Chrome funciona normal."
 
-    Agora, preencha o esqueleto primeiro, depois gere a User Story completa.
+    Saída:
+    **User Story:**
+    Como um cliente usando Safari, eu quero visualizar as imagens dos produtos, para que eu possa avaliar os itens antes de comprar.
+
+    **Critérios de Aceitação:**
+    1. **Dado que** estou usando o navegador Safari, **quando** acesso a página de um produto, **então** as imagens devem carregar corretamente.
+    2. **Dado que** as imagens carregaram, **quando** visualizo o produto, **então** a qualidade deve ser a mesma que em outros navegadores.
+    3. **Dado que** acesso a página do produto, **quando** as imagens carregam, **então** o tempo deve ser similar ao de outros navegadores.
+
+    ---
+
+    Agora, analise o bug report fornecido e gere a User Story completa.
+    Responda APENAS com o formato de saída acima. Não inclua raciocínio, esqueleto ou processo.
 
   user_prompt: |
     Relato de Bug:
@@ -112,10 +117,10 @@ bug_to_user_story_v2:
     {bug_report}
     ---
 
-    Primeiro preencha o esqueleto, depois gere a User Story completa.
+    Gere a User Story completa. Não inclua raciocínio ou esqueleto.
 
   # Metadados
-  version: "v2.6"
+  version: "v2.8"
   created_at: "2025-05-24"
   tags:
     - "bug-analysis"
@@ -124,10 +129,8 @@ bug_to_user_story_v2:
     - "few-shot"
     - "chain-of-thought"
     - "role-prompting"
-    - "skeleton-of-thought"
 
   techniques_applied:
     - "Role Prompting"
     - "Chain of Thought (CoT)"
     - "Few-shot Learning"
-    - "Skeleton of Thought"
