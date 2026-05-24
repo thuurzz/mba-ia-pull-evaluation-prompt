@@ -57,10 +57,13 @@ class TestPrompts:
 
     def test_prompt_no_todos(self, prompt_data):
         """Garante que você não esqueceu nenhum `[TODO]` no texto."""
+        import re
         v2 = prompt_data.get("bug_to_user_story_v2", {})
         full_text = v2.get("system_prompt", "") + v2.get("user_prompt", "")
         assert "[TODO]" not in full_text, "Prompt ainda contém [TODO] não resolvido"
-        assert "TODO" not in full_text, "Prompt ainda contém TODO não resolvido"
+        # Verificar TODOs não resolvidos, evitando falsos positivos com palavras como TODOS
+        todo_matches = re.findall(r'TODO[:\s]', full_text)
+        assert len(todo_matches) == 0, f"Prompt ainda contém {len(todo_matches)} TODO(s) não resolvido(s)"
 
     def test_minimum_techniques(self, prompt_data):
         """Verifica (através dos metadados do yaml) se pelo menos 2 técnicas foram listadas."""
