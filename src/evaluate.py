@@ -13,6 +13,7 @@ Este script:
 Suporta múltiplos providers de LLM:
 - OpenAI (gpt-4o, gpt-4o-mini)
 - Google Gemini (gemini-2.5-flash)
+- Ollama Local (gemma4, llama3.1, qwen, etc.)
 
 Configure o provider no arquivo .env através da variável LLM_PROVIDER.
 """
@@ -143,23 +144,30 @@ def pull_prompt_from_langsmith(prompt_name: str) -> ChatPromptTemplate:
 def evaluate_prompt_on_example(
     prompt_template: ChatPromptTemplate,
     example: Any,
-    llm: Any
+    llm: Any,
+    idx: int = 0,
+    total: int = 0
 ) -> Dict[str, Any]:
     try:
         inputs = example.inputs if hasattr(example, 'inputs') else {}
         outputs = example.outputs if hasattr(example, 'outputs') else {}
 
-        chain = prompt_template | llm
-
-        response = chain.invoke(inputs)
-        answer = response.content
-
-        reference = outputs.get("reference", "") if isinstance(outputs, dict) else ""
-
         if isinstance(inputs, dict):
             question = inputs.get("question", inputs.get("bug_report", inputs.get("pr_title", "N/A")))
         else:
             question = "N/A"
+
+        print(f"\n   [{idx}/{total}] Processando exemplo...")
+        print(f"      📝 Bug report: {question[:100]}...")
+
+        chain = prompt_template | llm
+        print(f"      🤖 Invocando LLM...")
+
+        response = chain.invoke(inputs)
+        answer = response.content
+        print(f"      ✅ Resposta recebida ({len(answer)} chars)")
+
+        reference = outputs.get("reference", "") if isinstance(outputs, dict) else ""
 
         return {
             "answer": answer,
@@ -200,9 +208,10 @@ def evaluate_prompt(
         print("   Avaliando exemplos...")
 
         for i, example in enumerate(examples, 1):
-            result = evaluate_prompt_on_example(prompt_template, example, llm)
+            result = evaluate_prompt_on_example(prompt_template, example, llm, idx=i, total=len(examples))
 
             if result["answer"]:
+                print(f"      📊 Avaliando métricas...")
                 f1 = evaluate_f1_score(result["question"], result["answer"], result["reference"])
                 clarity = evaluate_clarity(result["question"], result["answer"], result["reference"])
                 precision = evaluate_precision(result["question"], result["answer"], result["reference"])
@@ -211,7 +220,9 @@ def evaluate_prompt(
                 clarity_scores.append(clarity["score"])
                 precision_scores.append(precision["score"])
 
-                print(f"      [{i}/{len(examples)}] F1:{f1['score']:.2f} Clarity:{clarity['score']:.2f} Precision:{precision['score']:.2f}")
+                print(f"      ✅ Resultado -> F1:{f1['score']:.2f} | Clarity:{clarity['score']:.2f} | Precision:{precision['score']:.2f}")
+            else:
+                print(f"      ❌ Exemplo {i} falhou - sem resposta")
 
         avg_f1 = sum(f1_scores) / len(f1_scores) if f1_scores else 0.0
         avg_clarity = sum(clarity_scores) / len(clarity_scores) if clarity_scores else 0.0
@@ -290,6 +301,8 @@ def main():
         required_vars.append("OPENAI_API_KEY")
     elif provider in ["google", "gemini"]:
         required_vars.append("GOOGLE_API_KEY")
+    elif provider == "ollama":
+        pass  # Ollama não requer API key
 
     if not check_env_vars(required_vars):
         return 1
