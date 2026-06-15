@@ -32,9 +32,12 @@ Este projeto implementa um pipeline completo de otimização de prompts para con
 - Definição de persona: **Product Manager Sênior com 10 anos de experiência**
 - Especialidade declarada em metodologias ágeis e transformação de bugs em User Stories
 - **Justificativa**: A persona especializada guia o modelo a gerar respostas no formato e tom esperados por equipes de desenvolvimento, aumentando a clareza e profissionalismo.
-❌ STATUS: REPROVADO
-⚠️  Métricas abaixo de 0.8: helpfulness, correctness, f1_score, clarity, precision
-```
+- **Exemplo no prompt**:
+  ```yaml
+  system_prompt: |
+    Você é um Product Manager Sênior especialista em metodologias ágeis.
+    Transforme relatos de bugs em User Stories no formato padrão.
+  ```
 
 ### 2. Chain of Thought (CoT)
 
@@ -45,6 +48,18 @@ Este projeto implementa um pipeline completo de otimização de prompts para con
   4. Extrair detalhes técnicos
   5. Definir critérios testáveis
 - **Justificativa**: Forçar o modelo a "pensar" antes de responder reduz omissões e melhora a completude da User Story, impactando diretamente o F1-Score.
+- **Exemplo no prompt**:
+  ```yaml
+  RACIOCÍNIO (pense passo a passo, mas NÃO mostre na resposta):
+    1. Identifique a persona mais específica afetada pelo bug.
+    2. Extraia TODAS as informações técnicas do bug.
+    3. Extraia TODAS as informações de impacto.
+    4. Determine o valor META para cada critério de aceitação.
+    5. Mapeie cada item para a seção correta da User Story.
+    6. Remova redundâncias.
+    7. Verifique se algum detalhe ficou de fora.
+    8. Gere a resposta final no formato abaixo.
+  ```
 
 ### 3. Few-shot Learning
 
@@ -56,6 +71,26 @@ Este projeto implementa um pipeline completo de otimização de prompts para con
   - Bug de modal/z-index com acessibilidade
   - Bug de webhook com logs
 - **Justificativa**: Exemplos concretos demonstram o formato esperado, regras implícitas e tratamento de edge cases, reduzindo a variação na qualidade das respostas.
+- **Exemplo no prompt**: 6 exemplos completos no `system_prompt`, cobrindo bugs simples, médio, complexo, performance, modal/z-index e webhook. Ver linhas 70–197 do `bug_to_user_story_v2.yml`.
+  ```yaml
+  EXEMPLOS:
+    ---
+    Entrada: "Botão de adicionar ao carrinho não funciona no produto ID 1234."
+    Saída:
+      Como um cliente navegando na loja, eu quero...
+      Critérios de Aceitação:
+        - Dado que estou visualizando um produto
+        - Quando clico no botão "Adicionar ao Carrinho"
+        - Então o produto deve ser adicionado ao carrinho
+    ---
+    Entrada: "Endpoint /api/users/:id retorna dados sem validar permissões..."
+    Saída:
+      Como o sistema, eu quero validar permissões...
+      Critérios de Aceitação:
+        - Dado que sou um usuário comum
+        - Quando tento acessar GET /api/users/:id de outro usuário
+        - Então devo receber HTTP 403 Forbidden
+  ```
 
 ### 4. Self-Refinement (Critique-and-Revise)
 Métricas Base:
@@ -71,11 +106,36 @@ Métricas Base:
 - Revisão mental de clareza antes da resposta final
 - Checks: bullet único por ideia, sem repetição, comportamento vs implementação, bugs simples sem seções extras
 - **Justificativa**: Força o modelo a revisar a própria saída, melhorando Clarity sem perder completude.
+- **Exemplo no prompt**:
+  ```yaml
+  REVISÃO DE CLAREZA (faça mentalmente antes de responder, mas NÃO mostre):
+    - Cada bullet tem uma única ideia?
+    - Existe informação repetida em mais de uma seção?
+    - Critérios de Aceitação descrevem comportamento esperado?
+    - Contexto Técnico contém apenas detalhes técnicos objetivos?
+    - Bugs simples ficaram sem seções extras desnecessárias?
+  ```
 
 ### 5. Output Constraints / Format Control
 
 - Regras explícitas de formatação: bullets curtos, seções separadas, subtítulos por problema em bugs complexos
 - **Justificativa**: Restrições de formato garantem saída limpa e estruturada, aumentando Clarity e Precision.
+- **Exemplo no prompt**:
+  ```yaml
+  FORMATO DE SAÍDA (siga exatamente este formato):
+    Como um [persona específica], eu quero [ação desejada], para que [benefício real].
+    Critérios de Aceitação:
+      - Dado que [contexto]
+      - Quando [ação]
+      - Então [resultado]
+      - E [resultado adicional] (se houver)
+    Se o bug tiver detalhes técnicos, adicione:
+    Contexto Técnico:
+      - [Detalhe técnico 1]
+    Se o bug tiver dados de impacto, adicione:
+    Contexto do Bug:
+      - [Dado de impacto 1]
+  ```
 
 ### Evolução das Técnicas nas Iterações
 
@@ -362,7 +422,8 @@ pip install -r requirements.txt
 ## Evidências no LangSmith
 
 - **Prompt v2.15 (Aprovado)**: https://smith.langchain.com/hub/thuurzz/bug_to_user_story_v2
-- **Dataset**: `meu-desafio-prompts-eval` (15 exemplos)
+- **Projeto de Avaliação**: https://smith.langchain.com/o/8c231a3a-0917-46da-80bb-9fc3ee81db4a/projects/meu-desafio-prompts
+- **Dataset**: https://smith.langchain.com/o/8c231a3a-0917-46da-80bb-9fc3ee81db4a/datasets/meu-desafio-prompts-eval (15 exemplos)
 
 ---
 
