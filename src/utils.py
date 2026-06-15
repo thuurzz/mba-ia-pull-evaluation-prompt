@@ -5,11 +5,20 @@ Funções auxiliares para o projeto de otimização de prompts.
 import os
 import yaml
 import json
+import warnings
 from typing import Dict, Any, Optional
 from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Suprimir deprecation warnings do LangChain
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+try:
+    from langchain_core._api.deprecation import LangChainDeprecationWarning
+    warnings.filterwarnings("ignore", category=LangChainDeprecationWarning)
+except ImportError:
+    pass
 
 
 def load_yaml(file_path: str) -> Optional[Dict[str, Any]]:
@@ -142,7 +151,8 @@ def validate_prompt_structure(prompt_data: Dict[str, Any]) -> tuple[bool, list]:
 
     techniques = prompt_data.get('techniques_applied', [])
     if len(techniques) < 2:
-        errors.append(f"Mínimo de 2 técnicas requeridas, encontradas: {len(techniques)}")
+        errors.append(
+            f"Mínimo de 2 técnicas requeridas, encontradas: {len(techniques)}")
 
     return (len(errors) == 0, errors)
 
@@ -190,6 +200,10 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.0):
     provider = os.getenv('LLM_PROVIDER', 'openai').lower()
     model_name = model or os.getenv('LLM_MODEL', 'gpt-4o-mini')
 
+    # Modelos que não suportam parâmetro temperature (apenas default=1)
+    no_temp_models = ['gpt-5', 'o1', 'o3']
+    supports_temp = not any(m in model_name.lower() for m in no_temp_models)
+
     if provider == 'openai':
         from langchain_openai import ChatOpenAI
 
@@ -200,11 +214,12 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.0):
                 "Obtenha uma chave em: https://platform.openai.com/api-keys"
             )
 
-        return ChatOpenAI(
-            model=model_name,
-            temperature=temperature,
-            api_key=api_key
-        )
+        kwargs = {"model": model_name, "api_key": api_key}
+        if supports_temp:
+            kwargs["temperature"] = temperature
+        else:
+            kwargs["temperature"] = 1  # único valor suportado por esses modelos
+        return ChatOpenAI(**kwargs)
 
     elif provider == 'google':
         from langchain_google_genai import ChatGoogleGenerativeAI
@@ -216,16 +231,25 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.0):
                 "Obtenha uma chave em: https://aistudio.google.com/app/apikey"
             )
 
-        return ChatGoogleGenerativeAI(
-            model=model_name,
-            temperature=temperature,
-            google_api_key=api_key
-        )
+        kwargs = {"model": model_name, "google_api_key": api_key}
+        if supports_temp:
+            kwargs["temperature"] = temperature
+        return ChatGoogleGenerativeAI(**kwargs)
+
+    elif provider == 'ollama':
+        from langchain_community.chat_models import ChatOllama
+
+        base_url = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')
+
+        kwargs = {"model": model_name, "base_url": base_url}
+        if supports_temp:
+            kwargs["temperature"] = temperature
+        return ChatOllama(**kwargs)
 
     else:
         raise ValueError(
             f"Provider '{provider}' não suportado.\n"
-            f"Use 'openai' ou 'google' na variável LLM_PROVIDER do .env"
+            f"Use 'openai', 'google' ou 'ollama' na variável LLM_PROVIDER do .env"
         )
 
 

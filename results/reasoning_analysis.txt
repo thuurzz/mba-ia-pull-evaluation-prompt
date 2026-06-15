@@ -1,0 +1,380 @@
+======================================================================
+ANÁLISE DE REASONING - PROMPT OPTIMIZATION
+======================================================================
+
+--- EXEMPLO 1/15 ---
+
+BUG REPORT:
+App de produtividade offline-first com bugs críticos de sincronização.
+
+CONTEXTO:
+App mobile (iOS + Android) que funciona offline e sincroniza quando tem internet.
+Usuários: vendedores em campo, muitas vezes sem conexão.
+
+PROBLEMAS REPORTADOS:
+
+1. CONFLITO DE DADOS - Merge incorreto causa perda de dados:
+
+   Cenário:
+   - Usuário A (offline) edita tarefa #123: "Ligar para cliente X às 14h"
+   - Usuário B (offline) edita mesma tarefa: "Ligar para cliente X às 15h (reagendado)"
+   - Ambos sincroni...
+
+SCORES: F1=0.89 | Clarity=0.78 | Precision=0.93
+F1 DETALHES: Precision=1.00 | Recall=0.80
+
+REASONING F1-Score:
+A resposta gerada é correta e relevante, cobrindo todos os bugs críticos (conflitos, upload, ordenação, memória) e seus impactos, sem informações inventadas. No entanto, faltam detalhes técnicos essenciais da resposta esperada, como uso explícito de CRDT/vector clocks, chunked upload com checkpoints de 5MB, processamento em lotes de 50, limites de memória (<500MB), e exemplos de algoritmos/protocolos. Também não cita métricas de sucesso ou tarefas técnicas sugeridas. Assim, a precisão é máxima, mas o recall é penalizado por omissões técnicas importantes.
+
+REASONING Clarity:
+A resposta é bem estruturada, com critérios de aceitação claros e tópicos separados, facilitando a leitura (Organização: 0.9). A linguagem é simples, mas em alguns pontos usa termos técnicos sem explicação (Linguagem: 0.7). Não há ambiguidade relevante, mas algumas instruções poderiam ser mais específicas (Ausência de Ambiguidade: 0.8). A resposta é relativamente concisa, mas repete informações do contexto e poderia ser mais direta (Concisão: 0.7).
+
+REASONING Precision:
+A resposta gerada é precisa, sem alucinações (1.0), pois não inventa soluções ou contextos. O foco na pergunta é alto (0.9): cobre todos os bugs críticos e critérios de aceitação, mas não detalha protocolos técnicos (ex: chunked upload, CRDTs) como na referência. A correção factual é alta (0.9): descreve corretamente os problemas e soluções esperadas, mas falta detalhamento técnico profundo (ex: checkpoints de 5MB, batch size exato de 50). Média: (1.0+0.9+0.9)/3 = 0.93.
+
+======================================================================
+
+--- EXEMPLO 2/15 ---
+
+BUG REPORT:
+Sistema de relatórios gerenciais com problemas severos de performance e dados incorretos.
+
+CONTEXTO:
+Aplicação SaaS B2B com 500+ empresas clientes, cada uma com 50-5000 usuários.
+
+PROBLEMAS:
+
+1. PERFORMANCE - Query N+1 no dashboard executivo:
+   - Endpoint: GET /api/reports/executive-dashboard
+   - Para cada empresa, faz query separada para buscar métricas
+   - 1 cliente com 100 departamentos = 101 queries
+   - Tempo de resposta: 45 segundos (SLA: 3s)
+   - Database CPU: 95% em horário de pico
+
+ ...
+
+SCORES: F1=0.90 | Clarity=0.75 | Precision=0.85
+F1 DETALHES: Precision=0.95 | Recall=0.85
+
+REASONING F1-Score:
+A resposta gerada cobre corretamente quase todos os critérios de aceitação e contexto técnico, sem informações incorretas ou inventadas. Ela detalha performance, consistência de MRR, atualização de cache e exportação de CSV, além de citar exemplos e impactos de negócio. No entanto, omite detalhes técnicos importantes como uso de materialized views, índices compostos, chunking na exportação, timeout, e diferenciação de cache por tipo de dado. Também não menciona explicitamente a centralização da função de cálculo de MRR e testes automatizados, reduzindo o recall.
+
+REASONING Clarity:
+A resposta é bem estruturada, com critérios de aceitação claros e exemplos, facilitando o entendimento (Organização: 0.9). A linguagem é acessível, mas há uso moderado de termos técnicos que podem dificultar para não especialistas (Linguagem: 0.7). Há pequenas ambiguidades, especialmente na definição de regras de cálculo e prazos de atualização (Ambiguidade: 0.7). A resposta é detalhada, mas poderia ser mais concisa, evitando repetições de contexto técnico já apresentado (Concisão: 0.7). Média: (0.9+0.7+0.7+0.7)/4 = 0.75.
+
+REASONING Precision:
+A resposta gerada é precisa, sem alucinações (1.0), e está bem focada na pergunta (1.0), traduzindo os problemas técnicos e de negócio em critérios de aceitação claros. No entanto, há pequenas imprecisões factuais (0.55): o tempo de atualização do cache foi definido como 5 minutos (esperado: 30 segundos), e o limite de usuários/departamentos está abaixo do esperado (5000 usuários/100 departamentos vs. 10.000 usuários). Também faltam detalhes técnicos como materialized views e exemplos de query. Média: (1.0+1.0+0.55)/3 = 0.85.
+
+======================================================================
+
+--- EXEMPLO 3/15 ---
+
+BUG REPORT:
+Sistema de checkout com múltiplas falhas críticas.
+
+PROBLEMAS IDENTIFICADOS:
+
+1. SEGURANÇA - XSS no campo de cupom:
+   - Input: <script>alert('xss')</script>
+   - Sistema executa o script
+   - Não há sanitização de entrada
+
+2. INTEGRAÇÃO - Gateway de pagamento retorna erro intermitente:
+   - POST /api/payment/process retorna 504 Gateway Timeout em 30% dos casos
+   - Clientes são cobrados mas pedido não é criado
+   - Logs: "Connection pool exhausted" no Postgres
+
+3. LÓGICA DE NEGÓCIO - Race condi...
+
+SCORES: F1=0.87 | Clarity=0.75 | Precision=0.93
+F1 DETALHES: Precision=0.95 | Recall=0.80
+
+REASONING F1-Score:
+A resposta gerada cobre corretamente todos os problemas críticos (XSS, timeout, race condition, loading infinito) e seus impactos, sem informações incorretas ou inventadas. No entanto, omite detalhes técnicos importantes dos critérios esperados, como uso de lock otimista/pessimista, idempotency key, circuit breaker, polling/webhook, e recomendações específicas de ferramentas (DOMPurify, SELECT FOR UPDATE, Redis INCR). Também simplifica mensagens de UX e não detalha todos os critérios técnicos, reduzindo o recall.
+
+REASONING Clarity:
+A resposta é bem organizada, separando claramente critérios de aceitação por área (segurança, integração, lógica, UX) e incluindo contexto técnico. A linguagem é simples e compreensível, mas há leve excesso de detalhamento e repetição entre critérios e contexto, o que prejudica a concisão. Não há ambiguidades relevantes, mas a estrutura poderia ser mais enxuta para facilitar a leitura. No geral, a clareza é boa, mas poderia ser aprimorada com menos redundância e foco direto nos pontos principais.
+
+REASONING Precision:
+A resposta não apresenta alucinações (1.0), pois todos os pontos abordados refletem os problemas reais descritos. O foco na pergunta é alto (0.9), já que cobre todos os tópicos críticos, mas a estrutura de user story e critérios de aceitação é um pouco genérica e menos detalhada que a referência. A correção factual é alta (0.9), pois os problemas e impactos são corretamente identificados, mas faltam detalhes técnicos específicos (ex: retry com backoff, SELECT FOR UPDATE) presentes na resposta esperada.
+
+======================================================================
+
+--- EXEMPLO 4/15 ---
+
+BUG REPORT:
+Modal de confirmação de exclusão aparece atrás do menu lateral em telas pequenas (< 768px).
+
+Detalhes:
+- z-index do modal: 1000
+- z-index do menu lateral: 1050
+- Usuários não conseguem clicar nos botões do modal
+- Precisam fechar o menu lateral antes...
+
+SCORES: F1=1.00 | Clarity=1.00 | Precision=0.97
+F1 DETALHES: Precision=1.00 | Recall=1.00
+
+REASONING F1-Score:
+A resposta gerada replica fielmente todas as informações da resposta esperada, incluindo critérios de aceitação, acessibilidade e contexto técnico. Não há informações incorretas, inventadas ou desnecessárias. Todos os pontos relevantes estão presentes, sem omissões ou adições irrelevantes.
+
+REASONING Clarity:
+A resposta é muito clara: está bem organizada em seções (Critérios de Aceitação, Critérios de Acessibilidade, Contexto Técnico), usa linguagem simples e direta, não apresenta ambiguidades e é concisa, sem informações redundantes. Todos os pontos relevantes são abordados de forma objetiva e compreensível, facilitando o entendimento do problema e da solução proposta.
+
+REASONING Precision:
+A resposta gerada está praticamente idêntica à resposta esperada, sem alucinações (1.0), totalmente focada na pergunta (1.0) e com informações corretas (0.9). A única pequena diferença é a menção explícita de 'modal de confirmação de exclusão' em vez de apenas 'modal de confirmação', mas isso não altera o sentido nem adiciona erro factual. Todos os critérios técnicos e de acessibilidade estão presentes e corretos.
+
+======================================================================
+
+--- EXEMPLO 5/15 ---
+
+BUG REPORT:
+Carrinho permite finalizar compra mesmo com produto fora de estoque.
+
+Fluxo do bug:
+1. Produto tem 2 unidades em estoque
+2. Cliente A adiciona 2 unidades ao carrinho
+3. Estoque fica zerado
+4. Cliente B ainda consegue adicionar ao carrinho
+5. Cliente B finaliza compra
+6. Sistema gera pedido mas não tem estoque para enviar...
+
+SCORES: F1=1.00 | Clarity=1.00 | Precision=1.00
+F1 DETALHES: Precision=1.00 | Recall=1.00
+
+REASONING F1-Score:
+A resposta gerada replica exatamente todas as informações da resposta esperada, sem adicionar, omitir ou modificar nenhum ponto relevante. Todos os critérios de aceitação, prevenção e contexto do bug estão presentes e corretos. Não há informações incorretas, inventadas ou desnecessárias. Portanto, tanto precision quanto recall são máximos.
+
+REASONING Clarity:
+A resposta está muito bem organizada, com seções claras para critérios de aceitação, prevenção e contexto do bug. A linguagem é simples, direta e acessível, sem jargões desnecessários. Não há ambiguidades; cada passo e condição está explicitamente detalhado. A resposta é concisa, indo direto ao ponto sem repetições ou informações supérfluas. Todos os critérios de clareza foram plenamente atendidos.
+
+REASONING Precision:
+A resposta gerada é idêntica à resposta esperada (ground truth), sem qualquer informação inventada ou não verificável (ausência de alucinações = 1.0). Está totalmente focada na pergunta, abordando o fluxo do bug e propondo critérios de aceitação e prevenção diretamente relacionados (foco = 1.0). Todas as informações estão corretas e alinhadas com a referência, sem erros factuais (correção factual = 1.0).
+
+======================================================================
+
+--- EXEMPLO 6/15 ---
+
+BUG REPORT:
+App Android trava ao carregar lista de notificações com mais de 50 itens.
+
+Observações:
+- Tela fica congelada por 5-10 segundos
+- ANR (Application Not Responding) em alguns casos
+- Lista não está usando paginação
+- Carrega tudo de uma vez na Thread principal...
+
+SCORES: F1=1.00 | Clarity=0.95 | Precision=1.00
+F1 DETALHES: Precision=1.00 | Recall=1.00
+
+REASONING F1-Score:
+A resposta gerada cobre todos os pontos da resposta esperada: objetivo do usuário, critérios de aceitação (incluindo tempo de carregamento, ausência de ANR e congelamento), critérios técnicos (paginação, background thread, RecyclerView, scroll infinito) e contexto do bug. Não há informações incorretas ou desnecessárias, e nenhum ponto importante foi omitido.
+
+REASONING Clarity:
+A resposta é muito clara, bem estruturada e segue uma ordem lógica (organização 1.0). A linguagem é simples e direta, sem jargões excessivos (linguagem 1.0). Não há ambiguidades; os critérios e contexto são objetivos (ausência de ambiguidade 1.0). Há leve redundância entre contexto técnico e contexto do bug, mas não compromete a concisão (concisão 0.8).
+
+REASONING Precision:
+A resposta não apresenta alucinações, pois todas as informações estão alinhadas com o contexto fornecido. O foco está totalmente na questão do travamento ao carregar notificações, sem divagações. Os critérios técnicos e de aceitação estão corretos e equivalentes à resposta esperada, incluindo sugestões como paginação, uso de RecyclerView e carregamento em background. Não há erros factuais ou informações inventadas. Portanto, a resposta é precisa, correta e focada.
+
+======================================================================
+
+--- EXEMPLO 7/15 ---
+
+BUG REPORT:
+Pipeline de vendas calcula valor total errado quando há desconto.
+
+Cenário:
+- Produto A: R$ 1.000
+- Produto B: R$ 500
+- Desconto: 10%
+- Valor esperado: R$ 1.350
+- Valor mostrado: R$ 1.400
+
+O sistema aplica desconto só no primeiro produto....
+
+SCORES: F1=0.95 | Clarity=0.95 | Precision=1.00
+F1 DETALHES: Precision=1.00 | Recall=0.90
+
+REASONING F1-Score:
+A resposta gerada é correta e relevante, cobrindo todos os pontos principais: cálculo correto do desconto, exemplo numérico, descrição do bug e contexto técnico. No entanto, omitiu o critério de aceitação sobre o detalhamento (mostrar subtotal, desconto e total), que estava explicitamente na resposta esperada. Não há informações incorretas ou desnecessárias.
+
+REASONING Clarity:
+A resposta é bem organizada, com seções claras (critérios de aceitação, exemplo de cálculo, contexto técnico). A linguagem é simples e direta, facilitando o entendimento. Não há ambiguidades: o problema e a solução esperada estão explícitos. É concisa, sem informações redundantes. Apenas poderia ser levemente mais direta ao evitar repetir partes do cenário, mas isso não prejudica a clareza geral.
+
+REASONING Precision:
+A resposta gerada não apresenta alucinações, está totalmente focada na pergunta e todas as informações estão corretas em relação ao cenário apresentado. O cálculo do desconto, o detalhamento do bug e os critérios de aceitação estão alinhados com a resposta esperada. Não há informações inventadas ou imprecisas.
+
+======================================================================
+
+--- EXEMPLO 8/15 ---
+
+BUG REPORT:
+Endpoint /api/users/:id retorna dados de qualquer usuário sem validar permissões.
+
+Exemplo:
+- Usuário comum (ID 100) consegue acessar GET /api/users/1 (admin)
+- Recebe email, telefone, endereço do admin
+- Apenas admins deveriam ver dados de outros usuários
+
+Severidade: ALTA - vazamento de dados pessoais...
+
+SCORES: F1=0.95 | Clarity=0.98 | Precision=0.93
+F1 DETALHES: Precision=0.95 | Recall=0.95
+
+REASONING F1-Score:
+A resposta gerada cobre quase todos os pontos da resposta esperada, incluindo critérios de aceitação, contexto de segurança, severidade, dados expostos e ações necessárias. A única diferença é que o tipo de vulnerabilidade foi descrito como 'vazamento de dados pessoais' em vez de 'Quebra de controle de acesso (OWASP A01:2021)', e houve uma leve redundância ao mencionar 'acesso indevido'. No geral, a resposta é altamente precisa e completa.
+
+REASONING Clarity:
+A resposta é muito bem organizada, com seções claras para critérios de aceitação, admins e contexto de segurança. A linguagem é simples, direta e acessível. Não há ambiguidades: fica claro quem pode acessar quais dados e quais respostas esperar. É concisa, sem redundâncias, e cobre todos os pontos essenciais. Apenas faltou citar explicitamente a ação de implementar middleware de autorização, mas isso não prejudica a clareza geral da resposta.
+
+REASONING Precision:
+A resposta gerada é precisa, sem alucinações (1.0), totalmente focada na pergunta (1.0) e praticamente correta factualmente (0.8). O único detalhe é que não menciona explicitamente a referência à OWASP A01:2021 e a recomendação de implementar middleware de autorização, presentes na resposta esperada. Todo o restante está alinhado, incluindo critérios de aceitação e contexto de segurança.
+
+======================================================================
+
+--- EXEMPLO 9/15 ---
+
+BUG REPORT:
+Relatório de vendas demora mais de 2 minutos para gerar quando filtro ultrapassa 1000 registros.
+
+Detalhes:
+- Query SQL está sem index na coluna data_venda
+- Timeout do navegador após 120 segundos
+- Usuários reclamando de lentidão no horário comercial...
+
+SCORES: F1=0.95 | Clarity=0.85 | Precision=0.93
+F1 DETALHES: Precision=0.95 | Recall=0.95
+
+REASONING F1-Score:
+A resposta gerada cobre quase todos os pontos da resposta esperada, incluindo o objetivo do gerente, critérios de aceitação e contexto técnico. A maioria das informações é correta e relevante. Pequenas diferenças: a performance esperada (<30s) não foi explicitamente repetida no contexto técnico, e há detalhes adicionais (como 'Contexto do Bug') que são relevantes, mas não estavam na resposta esperada. Não há informações incorretas ou inventadas.
+
+REASONING Clarity:
+A resposta é bem organizada, com seções claras para critérios de aceitação, contexto técnico e contexto do bug. A linguagem é simples e direta, facilitando o entendimento. Não há ambiguidades relevantes, mas a resposta poderia ser mais concisa ao evitar repetir informações já presentes nos critérios de aceitação e contexto técnico. Faltou também uma sugestão explícita de solução, como na resposta esperada, o que ajudaria na clareza geral. No geral, a resposta é clara, mas pode ser aprimorada em concisão e completude.
+
+REASONING Precision:
+A resposta não apresenta alucinações (1.0), pois todas as informações estão baseadas nos dados fornecidos. O foco na pergunta é alto (1.0), pois aborda exatamente o problema relatado, sem divagações. Na correção factual (0.8), há pequena imprecisão: a resposta não menciona explicitamente a sugestão de adicionar índice ou otimizar a query, como na referência. No geral, a resposta é precisa, mas faltou a recomendação técnica clara encontrada na ground truth.
+
+======================================================================
+
+--- EXEMPLO 10/15 ---
+
+BUG REPORT:
+Webhook de pagamento aprovado não está sendo chamado.
+
+Steps to reproduce:
+1. Fazer pedido de R$ 100
+2. Pagar com cartão de crédito
+3. Pagamento é aprovado no gateway
+4. Sistema não recebe notificação
+5. Status do pedido fica como "pendente"
+
+Logs do gateway mostram: HTTP 500 ao tentar POST /api/webhooks/payment...
+
+SCORES: F1=1.00 | Clarity=0.95 | Precision=0.95
+F1 DETALHES: Precision=1.00 | Recall=1.00
+
+REASONING F1-Score:
+A resposta gerada replica fielmente todas as informações da resposta esperada, incluindo critérios de aceitação, contexto técnico e detalhes do bug. Não há informações incorretas, inventadas ou desnecessárias. Todos os pontos relevantes da ground truth estão presentes, sem omissões. Portanto, tanto precision quanto recall são máximos.
+
+REASONING Clarity:
+A resposta é bem estruturada, separando claramente critérios de aceitação, contexto técnico e contexto do bug. A linguagem é simples e direta, facilitando o entendimento. Não há ambiguidades; o problema e as expectativas estão claros. A resposta é concisa, sem informações redundantes, mas poderia citar explicitamente o nome do gateway para maior precisão. No geral, a clareza é excelente, com apenas pequenos detalhes que poderiam ser aprimorados.
+
+REASONING Precision:
+A resposta gerada é praticamente idêntica à resposta esperada, sem alucinações (1.0), totalmente focada na pergunta (1.0) e com informações factualmente corretas (0.85). A única pequena diferença é a ausência do campo 'Gateway: [nome do gateway de pagamento]' na resposta gerada, o que é um detalhe menor e não compromete a precisão geral. Não há informações inventadas ou fora do contexto.
+
+======================================================================
+
+--- EXEMPLO 11/15 ---
+
+BUG REPORT:
+Imagens de produtos não aparecem no Safari. No Chrome funciona normal....
+
+SCORES: F1=0.82 | Clarity=0.85 | Precision=0.93
+F1 DETALHES: Precision=0.85 | Recall=0.80
+
+REASONING F1-Score:
+A resposta gerada cobre corretamente o objetivo do usuário e a maioria dos critérios de aceitação, como navegação no Safari, acesso à página do produto e exibição correta das imagens. Inclui também um critério extra sobre o Chrome, que é relevante. No entanto, omite detalhes importantes: não menciona explicitamente a qualidade das imagens nem o tempo de carregamento similar, ambos presentes na resposta esperada. Não há informações incorretas, mas faltam detalhes essenciais para recall total.
+
+REASONING Clarity:
+A resposta é bem organizada, com critérios de aceitação claros e separados. A linguagem é simples e direta, facilitando o entendimento. Não há ambiguidades relevantes, mas a inclusão dos critérios para o Chrome pode ser considerada um pouco redundante, já que o problema relatado é específico do Safari. Ainda assim, a resposta é concisa e cobre o essencial, apenas com leve excesso de detalhamento ao mencionar o Chrome.
+
+REASONING Precision:
+A resposta não apresenta alucinações (1.0), pois não inventa informações. Está focada na pergunta (1.0), descrevendo critérios de aceitação para o problema relatado. Porém, há pequena imprecisão factual (0.8): inclui um critério adicional sobre o Chrome que não está na referência e omite detalhes como qualidade e tempo de carregamento das imagens. A média dos critérios é (1.0 + 1.0 + 0.8) / 3 = 0.93.
+
+======================================================================
+
+--- EXEMPLO 12/15 ---
+
+BUG REPORT:
+Dashboard mostra contagem errada de usuários ativos. Mostra 50 mas só há 42 na lista....
+
+SCORES: F1=0.85 | Clarity=0.93 | Precision=1.00
+F1 DETALHES: Precision=0.90 | Recall=0.80
+
+REASONING F1-Score:
+A resposta gerada cobre corretamente o objetivo do usuário e a maioria dos critérios de aceitação, incluindo a correspondência da contagem e atualização em tempo real. No entanto, omite explicitamente o critério de incluir apenas usuários com status 'ativo'. Adiciona contexto técnico relevante, mas não inventa informações. A precisão é alta, pois quase tudo é relevante, mas a ausência do critério do status reduz o recall.
+
+REASONING Clarity:
+A resposta é bem organizada, separando claramente critérios de aceitação e contexto técnico. A linguagem é simples e direta, facilitando o entendimento. Não há ambiguidades, pois os critérios são objetivos e específicos. É concisa, sem informações redundantes, embora pudesse omitir o contexto técnico para ser ainda mais enxuta. No geral, a clareza é alta, com pequenas oportunidades de melhoria na concisão.
+
+REASONING Precision:
+A resposta não apresenta alucinações, pois apenas descreve o problema e critérios de aceitação baseados nos dados fornecidos. Está totalmente focada na pergunta, abordando a discrepância entre a contagem exibida e a lista real de usuários ativos. Todas as informações são corretas e alinhadas com a referência, sem erros factuais ou desvios do contexto apresentado.
+
+======================================================================
+
+--- EXEMPLO 13/15 ---
+
+BUG REPORT:
+No iOS, ao girar o celular para landscape, o layout da tela de perfil fica quebrado....
+
+SCORES: F1=1.00 | Clarity=0.95 | Precision=1.00
+F1 DETALHES: Precision=1.00 | Recall=1.00
+
+REASONING F1-Score:
+A resposta gerada cobre todos os pontos da resposta esperada: identifica o contexto (perfil no iOS), descreve o comportamento esperado ao girar para landscape, exige layout adaptável, elementos visíveis/alinhados e ausência de sobreposição. Não há informações incorretas ou desnecessárias, e todos os critérios de aceitação estão presentes, ainda que com pequenas variações de redação.
+
+REASONING Clarity:
+A resposta gerada é bem organizada, com user story e critérios de aceitação claros e em ordem lógica. A linguagem é simples e direta, sem jargões desnecessários. Não há ambiguidades; os requisitos estão explícitos e compreensíveis. É concisa, sem redundâncias, embora a frase 'para que eu possa visualizar todas as informações de forma organizada em qualquer orientação' pudesse ser um pouco mais direta. No geral, a clareza é excelente.
+
+REASONING Precision:
+A resposta gerada não apresenta alucinações, pois apenas reformula o problema e os critérios de aceitação de forma fiel ao contexto apresentado. Está totalmente focada na questão do layout quebrado ao girar para landscape no iOS, sem adicionar informações irrelevantes. Todos os critérios de aceitação estão corretos e alinhados com a ground truth, sem erros factuais ou imprecisões.
+
+======================================================================
+
+--- EXEMPLO 14/15 ---
+
+BUG REPORT:
+Campo de email aceita texto sem @, permitindo cadastros inválidos....
+
+SCORES: F1=0.92 | Clarity=0.90 | Precision=0.93
+F1 DETALHES: Precision=0.85 | Recall=1.00
+
+REASONING F1-Score:
+A resposta gerada cobre todos os pontos essenciais da resposta esperada: validação do email, mensagem de erro clara, bloqueio do envio e explicação do formato. Não há informações incorretas, mas há detalhes extras sobre acessibilidade que, embora úteis, não eram requisitados, reduzindo levemente a precisão. O recall é total, pois todos os critérios esperados estão presentes.
+
+REASONING Clarity:
+A resposta é bem organizada, separando claramente critérios de aceitação e acessibilidade. A linguagem é simples e direta, facilitando o entendimento. Não há ambiguidades; os requisitos são explícitos. Há leve redundância ao repetir a necessidade de validação e mensagens de erro, mas isso não compromete a clareza geral. A resposta é um pouco mais detalhada que o necessário, mas mantém boa concisão. No geral, a clareza é alta, apenas com pequenas oportunidades de simplificação.
+
+REASONING Precision:
+A resposta não apresenta alucinações (1.0), está focada na validação do campo de email (1.0), e os critérios de aceitação estão corretos. No entanto, adiciona critérios de acessibilidade não presentes na referência, o que é um pequeno desvio do foco e da factualidade (0.8). No geral, a resposta é precisa, mas extrapola levemente o escopo solicitado.
+
+======================================================================
+
+--- EXEMPLO 15/15 ---
+
+BUG REPORT:
+Botão de adicionar ao carrinho não funciona no produto ID 1234....
+
+SCORES: F1=1.00 | Clarity=1.00 | Precision=0.67
+F1 DETALHES: Precision=1.00 | Recall=1.00
+
+REASONING F1-Score:
+A resposta gerada é idêntica à resposta esperada, incluindo todos os critérios de aceitação e a descrição do usuário. Não há informações incorretas, inventadas ou desnecessárias, e nenhuma informação importante foi omitida.
+
+REASONING Clarity:
+A resposta está muito clara: apresenta uma estrutura lógica (história de usuário e critérios de aceitação), usa linguagem simples e direta, não há ambiguidades e é concisa, sem informações redundantes. Todas as informações estão em ordem sensata e são facilmente compreendidas, atendendo plenamente aos critérios de clareza.
+
+REASONING Precision:
+A resposta não apresenta alucinações (1.0), pois apenas repete critérios de aceitação comuns para o recurso descrito. No entanto, não responde diretamente ao problema relatado (botão não funciona para o produto ID 1234), apenas descreve o comportamento esperado (0.0 em foco na pergunta). A correção factual é alta (1.0), pois os critérios estão corretos, mas não abordam o erro específico. Média: (1.0 + 0.0 + 1.0)/3 = 0.67.
+
+======================================================================
+
