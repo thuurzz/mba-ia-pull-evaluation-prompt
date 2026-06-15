@@ -362,7 +362,8 @@ pip install -r requirements.txt
 ## Evidências no LangSmith
 
 - **Prompt v2.15 (Aprovado)**: https://smith.langchain.com/hub/thuurzz/bug_to_user_story_v2
-- **Dataset**: `meu-desafio-prompts-eval` (15 exemplos)
+- **Projeto de Avaliação**: https://smith.langchain.com/o/8c231a3a-0917-46da-80bb-9fc3ee81db4a/projects/meu-desafio-prompts
+- **Dataset**: https://smith.langchain.com/o/8c231a3a-0917-46da-80bb-9fc3ee81db4a/datasets/meu-desafio-prompts-eval (15 exemplos)
 
 ---
 
