@@ -4,13 +4,11 @@
 
 Este projeto implementa um pipeline completo de otimização de prompts para conversão de relatos de bugs em User Stories de alta qualidade, utilizando LangChain, LangSmith e técnicas avançadas de Prompt Engineering.
 
-O desafio consiste em:
-
-1. **Fazer pull** de um prompt de baixa qualidade do LangSmith Hub
-2. **Refatorar e otimizar** usando técnicas avançadas de Prompt Engineering
-3. **Fazer push** do prompt otimizado de volta ao LangSmith Hub
-4. **Avaliar a qualidade** através de 5 métricas customizadas
-5. **Atingir ≥ 0.9** em todas as métricas
+1. **Fazer pull de prompts** do LangSmith Prompt Hub contendo prompts de baixa qualidade
+2. **Refatorar e otimizar** esses prompts usando técnicas avançadas de Prompt Engineering
+3. **Fazer push dos prompts otimizados** de volta ao LangSmith
+4. **Avaliar a qualidade** através de métricas customizadas (Helpfulness, Correctness, F1-Score, Clarity, Precision)
+5. **Atingir pontuação mínima** de 0.8 (80%) em todas as métricas de avaliação
 
 ---
 
@@ -34,6 +32,9 @@ O desafio consiste em:
 - Definição de persona: **Product Manager Sênior com 10 anos de experiência**
 - Especialidade declarada em metodologias ágeis e transformação de bugs em User Stories
 - **Justificativa**: A persona especializada guia o modelo a gerar respostas no formato e tom esperados por equipes de desenvolvimento, aumentando a clareza e profissionalismo.
+❌ STATUS: REPROVADO
+⚠️  Métricas abaixo de 0.8: helpfulness, correctness, f1_score, clarity, precision
+```
 
 ### 2. Chain of Thought (CoT)
 
@@ -57,6 +58,15 @@ O desafio consiste em:
 - **Justificativa**: Exemplos concretos demonstram o formato esperado, regras implícitas e tratamento de edge cases, reduzindo a variação na qualidade das respostas.
 
 ### 4. Self-Refinement (Critique-and-Revise)
+Métricas Base:
+  - F1-Score: 0.93 ✓
+  - Clarity: 0.95 ✓
+  - Precision: 0.92 ✓
+
+✅ STATUS: APROVADO - Todas as métricas >= 0.8
+```
+
+---
 
 - Revisão mental de clareza antes da resposta final
 - Checks: bullet único por ideia, sem repetição, comportamento vs implementação, bugs simples sem seções extras
@@ -198,6 +208,10 @@ python src/push_prompts.py
 
 # 4. Avaliação com tracking (salva CSV + gera HTML + reasoning)
 python src/track_evaluations.py
+- Espera-se 3-5 iterações.
+- Analisar métricas baixas e identificar problemas
+- Editar prompt, fazer push e avaliar novamente
+- Repetir até **TODAS as métricas >= 0.8**
 
 # NOTA: track_evaluations.py executa evaluate.py internamente,
 # extrai métricas, salva CSV e gera relatório HTML automaticamente.
@@ -211,6 +225,17 @@ pytest tests/test_prompts.py -v
 ```
 
 ---
+```
+- Helpfulness >= 0.8
+- Correctness >= 0.8
+- F1-Score >= 0.8
+- Clarity >= 0.8
+- Precision >= 0.8
+
+MÉDIA das 5 métricas >= 0.8
+```
+
+**IMPORTANTE:** TODAS as 5 métricas devem estar >= 0.8, não apenas a média!
 
 ## Sistema de Tracking de Avaliações
 
@@ -275,6 +300,39 @@ mba-ia-pull-evaluation-prompt/
 └── results/
     ├── evaluations.csv           # Histórico de avaliações
     └── index.html                # Relatório visual
+│   └── test_prompts.py       # Testes de validação (implementar)
+```
+
+**O que você deve implementar:**
+
+- `prompts/bug_to_user_story_v2.yml` — Criar do zero com seu prompt otimizado
+- `src/pull_prompts.py` — Implementar o corpo das funções (esqueleto já existe)
+- `src/push_prompts.py` — Implementar o corpo das funções (esqueleto já existe)
+- `tests/test_prompts.py` — Implementar os 6 testes de validação (esqueleto já existe)
+- `README.md` — Documentar seu processo de otimização
+
+**O que já vem pronto (não alterar):**
+
+- `src/evaluate.py` — Script de avaliação completo
+- `src/metrics.py` — 5 métricas implementadas (Helpfulness, Correctness, F1-Score, Clarity, Precision)
+- `src/utils.py` — Funções auxiliares
+- `datasets/bug_to_user_story.jsonl` — Dataset com 15 bugs (5 simples, 7 médios, 3 complexos)
+- Suporte multi-provider (OpenAI e Gemini)
+
+## Repositórios úteis
+
+- [Repositório boilerplate do desafio](https://github.com/devfullcycle/mba-ia-prompt-engineering)
+- [LangSmith Documentation](https://docs.smith.langchain.com/)
+- [Prompt Engineering Guide](https://www.promptingguide.ai/)
+
+## VirtualEnv para Python
+
+Crie e ative um ambiente virtual antes de instalar dependências:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate  # No Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
 ---
@@ -327,9 +385,50 @@ mba-ia-pull-evaluation-prompt/
 - [LangSmith Documentation](https://docs.smith.langchain.com/)
 - [Prompt Engineering Guide](https://www.promptingguide.ai/)
 - [LangChain Hub](https://smith.langchain.com/hub)
+## Entregável
+
+**1. Repositório público no GitHub** (fork do repositório base) contendo:
+
+- Todo o código-fonte implementado
+- Arquivo `prompts/bug_to_user_story_v2.yml` 100% preenchido e funcional
+- Arquivo `README.md` atualizado
+
+**2. README.md deve conter:**
+
+**A) Seção "Técnicas Aplicadas (Fase 2)":**
+
+- Quais técnicas avançadas você escolheu para refatorar os prompts
+- Justificativa de por que escolheu cada técnica
+- Exemplos práticos de como aplicou cada técnica
+
+**B) Seção "Resultados Finais":**
+
+- Link público do seu dashboard do LangSmith mostrando as avaliações
+- Screenshots das avaliações com as notas mínimas de 0.8 atingidas
+- Tabela comparativa: prompts ruins (v1) vs prompts otimizados (v2)
+
+**C) Seção "Como Executar":**
+
+- Instruções claras e detalhadas de como executar o projeto
+- Pré-requisitos e dependências
+- Comandos para cada fase do projeto
+
+**3. Evidências no LangSmith:**
+
+- Link público (ou screenshots) do dashboard do LangSmith
+- Devem estar visíveis:
+  - Dataset de avaliação com 15 exemplos
+  - Execuções dos prompts v2 (otimizados) com notas ≥ 0.8
+  - Tracing detalhado de pelo menos 3 exemplos
 
 ---
 
 ## Licença
 
-Projeto desenvolvido para o MBA em Inteligência Artificial — Desafio de Otimização de Prompts.
+- **Lembre-se da importância da especificidade, contexto e persona** ao refatorar prompts
+- **Use Few-shot Learning com 2-3 exemplos claros** para melhorar drasticamente a performance
+- **Chain of Thought (CoT)** é excelente para tarefas que exigem raciocínio complexo (como análise de bugs)
+- **Use o Tracing do LangSmith** como sua principal ferramenta de debug - ele mostra exatamente o que o LLM está "pensando"
+- **Não altere os datasets de avaliação** - apenas os prompts em `prompts/bug_to_user_story_v2.yml`
+- **Itere, itere, itere** - é normal precisar de 3-5 iterações para atingir 0.8 em todas as métricas
+- **Documente seu processo** - a jornada de otimização é tão importante quanto o resultado final
