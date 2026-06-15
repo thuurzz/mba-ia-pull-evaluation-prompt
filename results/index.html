@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Avaliações - Prompt Optimization</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.6; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1, h2 { color: #58a6ff; margin-bottom: 10px; }
+        .subtitle { color: #8b949e; margin-bottom: 30px; }
+        .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; text-align: center; }
+        .card h3 { color: #8b949e; font-size: 0.9em; margin-bottom: 10px; }
+        .card .value { font-size: 2em; font-weight: bold; }
+        .card .value.pass { color: #3fb950; }
+        .card .value.fail { color: #f85149; }
+        .card .threshold { font-size: 0.8em; color: #8b949e; margin-top: 5px; }
+        table { width: 100%; border-collapse: collapse; background: #161b22; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; margin-bottom: 30px; }
+        th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #30363d; }
+        th { background: #21262d; color: #58a6ff; font-weight: 600; font-size: 0.85em; text-transform: uppercase; }
+        tr:hover { background: #1c2128; }
+        .version { font-weight: bold; color: #58a6ff; }
+        .timestamp { color: #8b949e; font-size: 0.9em; }
+        .llm { color: #d2a8ff; font-size: 0.85em; }
+        .duration { color: #8b949e; font-size: 0.9em; }
+        .score { font-weight: bold; }
+        .score.pass { color: #3fb950; }
+        .score.fail { color: #f85149; }
+        .trend { font-size: 0.8em; margin-left: 5px; }
+        .trend.up { color: #3fb950; }
+        .trend.down { color: #f85149; }
+        .trend.same { color: #8b949e; }
+        .status { padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: bold; }
+        .status.aprovado { background: #238636; color: white; }
+        .status.reprovado { background: #da3633; color: white; }
+        .chart-container { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
+        .metric-row { margin-bottom: 20px; }
+        .metric-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em; }
+        .bar-bg { background: #21262d; border-radius: 4px; height: 24px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 0.8em; font-weight: bold; }
+        .bar-fill.pass { background: #238636; }
+        .bar-fill.fail { background: #da3633; }
+        .footer { text-align: center; color: #8b949e; font-size: 0.85em; margin-top: 30px; padding-top: 20px; border-top: 1px solid #30363d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Relatório de Avaliações de Prompts</h1>
+        <p class="subtitle">Acompanhamento da evolução das métricas por versão do prompt</p>
+
+        <div class="summary">
+            <div class="card"><h3>Última Versão</h3><div class="value">v2.15</div></div>
+            <div class="card"><h3>LLM</h3><div class="value" style="font-size: 1.1em; color: #d2a8ff;">openai/gpt-4.1</div></div>
+            <div class="card"><h3>Tempo</h3><div class="value" style="font-size: 1.4em; color: #8b949e;">109.3s</div></div>
+
+            <div class="card">
+                <h3>F1-Score</h3>
+                <div class="value pass">0.9395</div>
+                <div class="threshold">meta: ≥ 0.90</div>
+            </div>
+
+            <div class="card">
+                <h3>Clarity</h3>
+                <div class="value pass">0.906</div>
+                <div class="threshold">meta: ≥ 0.90</div>
+            </div>
+
+            <div class="card">
+                <h3>Precision</h3>
+                <div class="value pass">0.9347</div>
+                <div class="threshold">meta: ≥ 0.90</div>
+            </div>
+
+            <div class="card">
+                <h3>Helpfulness</h3>
+                <div class="value pass">0.9203</div>
+                <div class="threshold">meta: ≥ 0.90</div>
+            </div>
+
+            <div class="card">
+                <h3>Correctness</h3>
+                <div class="value pass">0.9371</div>
+                <div class="threshold">meta: ≥ 0.90</div>
+            </div>
+
+            <div class="card">
+                <h3>Média Geral</h3>
+                <div class="value pass">0.9275</div>
+                <div class="threshold">meta: ≥ 0.90</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>📈 Métricas da Última Execução</h2>
+
+            <div class="metric-row">
+                <div class="metric-label"><span>F1-Score</span><span>0.9395</span></div>
+                <div class="bar-bg"><div class="bar-fill pass" style="width: 93.95%; min-width: 30px;">0.9395</div></div>
+            </div>
+
+            <div class="metric-row">
+                <div class="metric-label"><span>Clarity</span><span>0.906</span></div>
+                <div class="bar-bg"><div class="bar-fill pass" style="width: 90.60000000000001%; min-width: 30px;">0.906</div></div>
+            </div>
+
+            <div class="metric-row">
+                <div class="metric-label"><span>Precision</span><span>0.9347</span></div>
+                <div class="bar-bg"><div class="bar-fill pass" style="width: 93.47%; min-width: 30px;">0.9347</div></div>
+            </div>
+
+            <div class="metric-row">
+                <div class="metric-label"><span>Helpfulness</span><span>0.9203</span></div>
+                <div class="bar-bg"><div class="bar-fill pass" style="width: 92.03%; min-width: 30px;">0.9203</div></div>
+            </div>
+
+            <div class="metric-row">
+                <div class="metric-label"><span>Correctness</span><span>0.9371</span></div>
+                <div class="bar-bg"><div class="bar-fill pass" style="width: 93.71000000000001%; min-width: 30px;">0.9371</div></div>
+            </div>
+        </div>
+
+        <h2>📋 Histórico de Execuções</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data/Hora</th><th>Versão</th><th>LLM</th><th>F1</th><th>Clarity</th><th>Precision</th><th>Helpfulness</th><th>Correctness</th><th>Média</th><th>Tempo</th><th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 19:49:36</td>
+                    <td class="version">v2.15</td>
+                    <td class="llm">openai/gpt-4.1</td>
+                    <td class="score pass">0.9395 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.906 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.9347 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.9203 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.9371 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.9275 <span class="trend up">▲</span></td>
+
+                    <td class="duration">109.3s</td>
+                    <td><span class="status aprovado">APROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 19:44:08</td>
+                    <td class="version">v2.14</td>
+                    <td class="llm">openai/gpt-4.1</td>
+                    <td class="score pass">0.9358 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.8833 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.93 <span class="trend down">▼</span></td>
+                    <td class="score pass">0.9067 <span class="trend down">▼</span></td>
+                    <td class="score pass">0.9329 <span class="trend down">▼</span></td>
+                    <td class="score pass">0.9177 <span class="trend down">▼</span></td>
+
+                    <td class="duration">101.5s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 19:31:23</td>
+                    <td class="version">v2.14</td>
+                    <td class="llm">openai/gpt-4.1</td>
+                    <td class="score pass">0.94 <span class="trend same">●</span></td>
+                    <td class="score fail">0.88 <span class="trend same">●</span></td>
+                    <td class="score pass">0.94 <span class="trend same">●</span></td>
+                    <td class="score pass">0.91 <span class="trend same">●</span></td>
+                    <td class="score pass">0.94 <span class="trend same">●</span></td>
+                    <td class="score pass">0.9205 <span class="trend down">▼</span></td>
+
+                    <td class="duration">112.7s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 19:25:52</td>
+                    <td class="version">v2.13</td>
+                    <td class="llm">openai/gpt-4.1</td>
+                    <td class="score pass">0.94 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.88 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.94 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.91 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.94 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.9208 <span class="trend up">▲</span></td>
+
+                    <td class="duration">115.3s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 19:12:40</td>
+                    <td class="version">v2.12</td>
+                    <td class="llm">openai/gpt-4.1</td>
+                    <td class="score pass">0.92 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.87 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.92 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.89 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.92 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.9057 <span class="trend up">▲</span></td>
+
+                    <td class="duration">133.0s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 16:29:46</td>
+                    <td class="version">v2.12</td>
+                    <td class="llm">openai/gpt-5-mini</td>
+                    <td class="score fail">0.78 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.86 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.9 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.88 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.84 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.8524 <span class="trend up">▲</span></td>
+
+                    <td class="duration">1271.0s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 16:07:18</td>
+                    <td class="version">v2.12</td>
+                    <td class="llm">openai/gpt-5-mini</td>
+                    <td class="score fail">0.0 <span class="trend same">●</span></td>
+                    <td class="score fail">0.0 <span class="trend same">●</span></td>
+                    <td class="score fail">0.0 <span class="trend same">●</span></td>
+                    <td class="score fail">0.0 <span class="trend same">●</span></td>
+                    <td class="score fail">0.0 <span class="trend same">●</span></td>
+                    <td class="score fail">0.0 <span class="trend same">●</span></td>
+
+                    <td class="duration">7.3s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 16:06:12</td>
+                    <td class="version">v2.12</td>
+                    <td class="llm">openai/gpt-5-mini</td>
+                    <td class="score fail">0.0 <span class="trend same">●</span></td>
+                    <td class="score fail">0.0 <span class="trend same">●</span></td>
+                    <td class="score fail">0.0 <span class="trend same">●</span></td>
+                    <td class="score fail">0.0 <span class="trend same">●</span></td>
+                    <td class="score fail">0.0 <span class="trend same">●</span></td>
+                    <td class="score fail">0.0 <span class="trend same">●</span></td>
+
+                    <td class="duration">8.1s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 15:46:16</td>
+                    <td class="version">v2.12</td>
+                    <td class="llm">openai/gpt-5-mini</td>
+                    <td class="score fail">0.0 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.0 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.0 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.0 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.0 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.0 <span class="trend down">▼</span></td>
+
+                    <td class="duration">6.0s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 15:41:16</td>
+                    <td class="version">v2.12</td>
+                    <td class="llm">openai/gpt-4.1-mini</td>
+                    <td class="score pass">0.9 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.87 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.92 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.89 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.91 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.8973 <span class="trend up">▲</span></td>
+
+                    <td class="duration">124.2s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 15:37:13</td>
+                    <td class="version">v2.12</td>
+                    <td class="llm">ollama/llama3.1:8b</td>
+                    <td class="score fail">0.85 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.77 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.74 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.75 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.79 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.7804 <span class="trend down">▼</span></td>
+
+                    <td class="duration">285.7s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 15:32:03</td>
+                    <td class="version">v2.12</td>
+                    <td class="llm">openai/gpt-4.1-mini</td>
+                    <td class="score pass">0.92 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.86 <span class="trend down">▼</span></td>
+                    <td class="score pass">0.92 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.89 <span class="trend same">●</span></td>
+                    <td class="score pass">0.92 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.9028 <span class="trend up">▲</span></td>
+
+                    <td class="duration">179.9s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 15:27:42</td>
+                    <td class="version">v2.12</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.85 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.92 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.87 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.89 <span class="trend same">●</span></td>
+                    <td class="score fail">0.86 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.8771 <span class="trend up">▲</span></td>
+
+                    <td class="duration">150.0s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 15:24:38</td>
+                    <td class="version">v2.12</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.84 <span class="trend down">▼</span></td>
+                    <td class="score pass">0.91 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.86 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.89 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.85 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.871 <span class="trend down">▼</span></td>
+
+                    <td class="duration">147.2s</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 14:26:58</td>
+                    <td class="version">v2.12</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.85 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.92 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.88 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.9 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.86 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.8826 <span class="trend up">▲</span></td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 14:07:16</td>
+                    <td class="version">v2.11</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.76 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.88 <span class="trend same">●</span></td>
+                    <td class="score fail">0.86 <span class="trend same">●</span></td>
+                    <td class="score fail">0.87 <span class="trend same">●</span></td>
+                    <td class="score fail">0.81 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.8346 <span class="trend down">▼</span></td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 12:30:00</td>
+                    <td class="version">v2.11</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.78 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.88 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.86 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.87 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.82 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.8418 <span class="trend down">▼</span></td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-06-14 12:00:00</td>
+                    <td class="version">v2.10</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.84 <span class="trend up">▲</span></td>
+                    <td class="score pass">0.90 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.87 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.88 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.86 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.8705 <span class="trend up">▲</span></td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-05-24 18:46:02</td>
+                    <td class="version">v2.9</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.81 <span class="trend same">●</span></td>
+                    <td class="score fail">0.88 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.86 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.87 <span class="trend same">●</span></td>
+                    <td class="score fail">0.84 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.8521 <span class="trend up">▲</span></td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-05-24 18:40:24</td>
+                    <td class="version">v2.9</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.81 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.89 <span class="trend same">●</span></td>
+                    <td class="score fail">0.85 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.87 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.83 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.8496 <span class="trend up">▲</span></td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-05-24 18:37:21</td>
+                    <td class="version">v2.8</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.72 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.89 <span class="trend same">●</span></td>
+                    <td class="score fail">0.89 <span class="trend same">●</span></td>
+                    <td class="score fail">0.89 <span class="trend same">●</span></td>
+                    <td class="score fail">0.81 <span class="trend same">●</span></td>
+                    <td class="score fail">0.8396 <span class="trend down">▼</span></td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-05-24 18:34:47</td>
+                    <td class="version">v2.8</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.73 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.89 <span class="trend same">●</span></td>
+                    <td class="score fail">0.89 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.89 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.81 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.8411 <span class="trend up">▲</span></td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-05-24 18:31:27</td>
+                    <td class="version">v2.7</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.72 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.89 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.85 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.87 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.79 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.8251 <span class="trend down">▼</span></td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-05-24 18:19:39</td>
+                    <td class="version">v2.6</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.76 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.87 <span class="trend down">▼</span></td>
+                    <td class="score pass">0.91 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.89 <span class="trend same">●</span></td>
+                    <td class="score fail">0.84 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.8547 <span class="trend up">▲</span></td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-05-24 18:15:30</td>
+                    <td class="version">v2.5</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.75 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.88 <span class="trend same">●</span></td>
+                    <td class="score pass">0.9 <span class="trend same">●</span></td>
+                    <td class="score fail">0.89 <span class="trend same">●</span></td>
+                    <td class="score fail">0.83 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.8511 <span class="trend down">▼</span></td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-05-24 18:10:35</td>
+                    <td class="version">v2.4</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.77 <span class="trend up">▲</span></td>
+                    <td class="score fail">0.88 <span class="trend down">▼</span></td>
+                    <td class="score pass">0.9 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.89 <span class="trend down">▼</span></td>
+                    <td class="score fail">0.84 <span class="trend same">●</span></td>
+                    <td class="score fail">0.8559 <span class="trend down">▼</span></td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+                <tr>
+                    <td class="timestamp">2026-05-24 18:05:17</td>
+                    <td class="version">v2.3</td>
+                    <td class="llm">openai/gpt-4o-mini</td>
+                    <td class="score fail">0.75 </td>
+                    <td class="score fail">0.89 </td>
+                    <td class="score pass">0.93 </td>
+                    <td class="score pass">0.91 </td>
+                    <td class="score fail">0.84 </td>
+                    <td class="score fail">0.8633 </td>
+
+                    <td class="duration">Não medido</td>
+                    <td><span class="status reprovado">REPROVADO</span></td>
+                </tr>
+
+            </tbody>
+        </table>
+        <div class="footer">
+            <p>Relatório gerado automaticamente pelo sistema de tracking de avaliações</p>
+            <p>Reasoning salvo em <code>results/reasoning_analysis.txt</code></p>
+        </div>
+    </div>
+</body>
+</html>

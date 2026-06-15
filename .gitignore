@@ -50,3 +50,8 @@ results/
 .claude/
 .cursor/
 .github/copilot-instructions.md
+
+# Force-added results files (kept in git via -f):
+# results/index.html
+# results/evaluations.csv
+# results/screenshots/
