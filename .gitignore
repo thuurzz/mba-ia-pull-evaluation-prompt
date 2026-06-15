@@ -48,3 +48,5 @@ ENV/
 screenshots/
 results/
 .claude/
+.cursor/
+.github/copilot-instructions.md

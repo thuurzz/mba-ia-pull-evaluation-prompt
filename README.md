@@ -5,6 +5,7 @@
 Este projeto implementa um pipeline completo de otimização de prompts para conversão de relatos de bugs em User Stories de alta qualidade, utilizando LangChain, LangSmith e técnicas avançadas de Prompt Engineering.
 
 O desafio consiste em:
+
 1. **Fazer pull** de um prompt de baixa qualidade do LangSmith Hub
 2. **Refatorar e otimizar** usando técnicas avançadas de Prompt Engineering
 3. **Fazer push** do prompt otimizado de volta ao LangSmith Hub
@@ -29,11 +30,13 @@ O desafio consiste em:
 ## Técnicas Aplicadas (Fase 2)
 
 ### 1. Role Prompting
+
 - Definição de persona: **Product Manager Sênior com 10 anos de experiência**
 - Especialidade declarada em metodologias ágeis e transformação de bugs em User Stories
 - **Justificativa**: A persona especializada guia o modelo a gerar respostas no formato e tom esperados por equipes de desenvolvimento, aumentando a clareza e profissionalismo.
 
 ### 2. Chain of Thought (CoT)
+
 - Raciocínio passo a passo antes da geração:
   1. Identificar persona afetada
   2. Entender ação desejada
@@ -43,6 +46,7 @@ O desafio consiste em:
 - **Justificativa**: Forçar o modelo a "pensar" antes de responder reduz omissões e melhora a completude da User Story, impactando diretamente o F1-Score.
 
 ### 3. Few-shot Learning
+
 - **6 exemplos completos** de entrada/saída cobrindo todos os tipos de bugs:
   - Bug simples (botão não funciona)
   - Bug médio com contexto técnico (endpoint segurança)
@@ -53,22 +57,24 @@ O desafio consiste em:
 - **Justificativa**: Exemplos concretos demonstram o formato esperado, regras implícitas e tratamento de edge cases, reduzindo a variação na qualidade das respostas.
 
 ### 4. Self-Refinement (Critique-and-Revise)
+
 - Revisão mental de clareza antes da resposta final
 - Checks: bullet único por ideia, sem repetição, comportamento vs implementação, bugs simples sem seções extras
 - **Justificativa**: Força o modelo a revisar a própria saída, melhorando Clarity sem perder completude.
 
 ### 5. Output Constraints / Format Control
+
 - Regras explícitas de formatação: bullets curtos, seções separadas, subtítulos por problema em bugs complexos
 - **Justificativa**: Restrições de formato garantem saída limpa e estruturada, aumentando Clarity e Precision.
 
 ### Evolução das Técnicas nas Iterações
 
-| Iteração | Versão | Mudança Principal |
-|---|---|---|
-| 1 | v2.0 | Prompt inicial com CoT detalhado, 6 passos, 3 exemplos |
-| 2 | v2.1 | Regras anti-omissão, Contexto Técnico/Impacto obrigatórios, exemplo complexo do dataset |
-| 3 | v2.2 | Simplificação radical — prompt curto e direto, 3 exemplos equilibrados |
-| 4 | v2.3 | Ultra-simplificado — 4 instruções, 6 regras, foco máximo em preservação de informações |
+| Iteração | Versão | Mudança Principal                                                                             |
+| ---------- | ------- | ---------------------------------------------------------------------------------------------- |
+| 1          | v2.0    | Prompt inicial com CoT detalhado, 6 passos, 3 exemplos                                         |
+| 2          | v2.1    | Regras anti-omissão, Contexto Técnico/Impacto obrigatórios, exemplo complexo do dataset     |
+| 3          | v2.2    | Simplificação radical — prompt curto e direto, 3 exemplos equilibrados                      |
+| 4          | v2.3    | Ultra-simplificado — 4 instruções, 6 regras, foco máximo em preservação de informações |
 
 ---
 
@@ -76,52 +82,61 @@ O desafio consiste em:
 
 ### ✅ Última Avaliação APROVADA (v2.15)
 
-| Métrica | Score | Meta | Status |
-|---|---|---|---|
-| F1-Score | **0.94** | ≥ 0.90 | ✅ |
-| Clarity | **0.91** | ≥ 0.90 | ✅ |
-| Precision | **0.93** | ≥ 0.90 | ✅ |
-| Helpfulness | **0.92** | ≥ 0.90 | ✅ |
-| Correctness | **0.94** | ≥ 0.90 | ✅ |
-| **Média Geral** | **0.93** | ≥ 0.90 | ✅ |
+| Métrica               | Score          | Meta    | Status |
+| ---------------------- | -------------- | ------- | ------ |
+| F1-Score               | **0.94** | ≥ 0.90 | ✅     |
+| Clarity                | **0.91** | ≥ 0.90 | ✅     |
+| Precision              | **0.93** | ≥ 0.90 | ✅     |
+| Helpfulness            | **0.92** | ≥ 0.90 | ✅     |
+| Correctness            | **0.94** | ≥ 0.90 | ✅     |
+| **Média Geral** | **0.93** | ≥ 0.90 | ✅     |
 
 **Status: ✅ APROVADO** — Todas as 5 métricas ≥ 0.90.
+
 - **Prompt**: `v2.15`
 - **Modelo**: `openai/gpt-4.1`
 - **Tempo**: 109.3s
 - **Data**: 2026-06-14
 
+### Screenshots de Evidência
+
+**Dashboard com métricas:**
+![Testes pytest passando](results/screenshots/teste_pytest_passando.png)
+
+**Métricas finais aprovadas no LangSmith:**
+![Métricas finais aprovadas](results/screenshots/metricas_finais_aprovadas.png)
+
 ### Tabela Comparativa: v1 vs v2.15
 
-| Métrica | v1 (Base) | v2.15 (Final) | Delta |
-|---|---|---|---|
-| F1-Score | 0.48 | **0.94** | +96% |
-| Clarity | 0.50 | **0.91** | +82% |
-| Precision | 0.46 | **0.93** | +102% |
-| Helpfulness | 0.45 | **0.92** | +104% |
-| Correctness | 0.52 | **0.94** | +81% |
+| Métrica         | v1 (Base)      | v2.15 (Final)  | Delta          |
+| ---------------- | -------------- | -------------- | -------------- |
+| F1-Score         | 0.48           | **0.94** | +96%           |
+| Clarity          | 0.50           | **0.91** | +82%           |
+| Precision        | 0.46           | **0.93** | +102%          |
+| Helpfulness      | 0.45           | **0.92** | +104%          |
+| Correctness      | 0.52           | **0.94** | +81%           |
 | **Média** | **0.48** | **0.93** | **+94%** |
 
 ### Evolução por Iteração
 
-| Versão | F1 | Clarity | Precision | Helpfulness | Correctness | Média | Modelo | Status |
-|---|---|---|---|---|---|---|---|---|
-| v2.0 | 0.79 | 0.89 | 0.90 | 0.89 | 0.85 | 0.86 | gpt-4o-mini | ❌ |
-| v2.1 | 0.76 | 0.88 | 0.90 | 0.89 | 0.83 | 0.85 | gpt-4o-mini | ❌ |
-| v2.2 | 0.74 | 0.88 | 0.90 | 0.89 | 0.82 | 0.85 | gpt-4o-mini | ❌ |
-| v2.3 | 0.75 | 0.89 | 0.93 | 0.91 | 0.84 | 0.86 | gpt-4o-mini | ❌ |
-| v2.4 | 0.77 | 0.88 | 0.91 | 0.90 | 0.84 | 0.86 | gpt-4o-mini | ❌ |
-| v2.5 | 0.78 | 0.88 | 0.91 | 0.90 | 0.85 | 0.86 | gpt-4o-mini | ❌ |
-| v2.6 | 0.78 | 0.88 | 0.91 | 0.90 | 0.85 | 0.86 | gpt-4o-mini | ❌ |
-| v2.7 | 0.77 | 0.88 | 0.90 | 0.89 | 0.84 | 0.86 | gpt-4o-mini | ❌ |
-| v2.8 | 0.78 | 0.87 | 0.91 | 0.89 | 0.84 | 0.86 | gpt-4o-mini | ❌ |
-| v2.9 | 0.79 | 0.89 | 0.91 | 0.90 | 0.85 | 0.87 | gpt-4o-mini | ❌ |
-| v2.10 | 0.79 | 0.88 | 0.91 | 0.90 | 0.85 | 0.87 | gpt-4o-mini | ❌ |
-| v2.11 | 0.79 | 0.88 | 0.91 | 0.90 | 0.85 | 0.87 | gpt-4o-mini | ❌ |
-| v2.12 | 0.80 | 0.87 | 0.91 | 0.89 | 0.85 | 0.86 | gpt-4o-mini | ❌ |
-| v2.12 | 0.79 | 0.87 | 0.90 | 0.89 | 0.85 | 0.86 | gpt-5-mini | ❌ |
-| v2.13 | 0.94 | 0.88 | 0.94 | 0.91 | 0.94 | 0.92 | gpt-4.1 | ❌ |
-| v2.14 | 0.94 | 0.88 | 0.94 | 0.91 | 0.94 | 0.92 | gpt-4.1 | ❌ |
+| Versão         | F1             | Clarity        | Precision      | Helpfulness    | Correctness    | Média         | Modelo            | Status       |
+| --------------- | -------------- | -------------- | -------------- | -------------- | -------------- | -------------- | ----------------- | ------------ |
+| v2.0            | 0.79           | 0.89           | 0.90           | 0.89           | 0.85           | 0.86           | gpt-4o-mini       | ❌           |
+| v2.1            | 0.76           | 0.88           | 0.90           | 0.89           | 0.83           | 0.85           | gpt-4o-mini       | ❌           |
+| v2.2            | 0.74           | 0.88           | 0.90           | 0.89           | 0.82           | 0.85           | gpt-4o-mini       | ❌           |
+| v2.3            | 0.75           | 0.89           | 0.93           | 0.91           | 0.84           | 0.86           | gpt-4o-mini       | ❌           |
+| v2.4            | 0.77           | 0.88           | 0.91           | 0.90           | 0.84           | 0.86           | gpt-4o-mini       | ❌           |
+| v2.5            | 0.78           | 0.88           | 0.91           | 0.90           | 0.85           | 0.86           | gpt-4o-mini       | ❌           |
+| v2.6            | 0.78           | 0.88           | 0.91           | 0.90           | 0.85           | 0.86           | gpt-4o-mini       | ❌           |
+| v2.7            | 0.77           | 0.88           | 0.90           | 0.89           | 0.84           | 0.86           | gpt-4o-mini       | ❌           |
+| v2.8            | 0.78           | 0.87           | 0.91           | 0.89           | 0.84           | 0.86           | gpt-4o-mini       | ❌           |
+| v2.9            | 0.79           | 0.89           | 0.91           | 0.90           | 0.85           | 0.87           | gpt-4o-mini       | ❌           |
+| v2.10           | 0.79           | 0.88           | 0.91           | 0.90           | 0.85           | 0.87           | gpt-4o-mini       | ❌           |
+| v2.11           | 0.79           | 0.88           | 0.91           | 0.90           | 0.85           | 0.87           | gpt-4o-mini       | ❌           |
+| v2.12           | 0.80           | 0.87           | 0.91           | 0.89           | 0.85           | 0.86           | gpt-4o-mini       | ❌           |
+| v2.12           | 0.79           | 0.87           | 0.90           | 0.89           | 0.85           | 0.86           | gpt-5-mini        | ❌           |
+| v2.13           | 0.94           | 0.88           | 0.94           | 0.91           | 0.94           | 0.92           | gpt-4.1           | ❌           |
+| v2.14           | 0.94           | 0.88           | 0.94           | 0.91           | 0.94           | 0.92           | gpt-4.1           | ❌           |
 | **v2.15** | **0.94** | **0.91** | **0.93** | **0.92** | **0.94** | **0.93** | **gpt-4.1** | **✅** |
 
 > **Observação**: O salto de qualidade ocorreu ao mudar do `gpt-4o-mini` para o `gpt-4.1` e refinar regras de clareza (Self-Refinement + Output Constraints). O F1-Score pulou de 0.80 para 0.94 — ganho de +17.5%.
@@ -219,12 +234,12 @@ xdg-open results/index.html  # Linux
 
 ### Arquivos Gerados
 
-| Arquivo | Descrição |
-|---|---|
-| `results/evaluations.csv` | Histórico de todas as avaliações em formato CSV |
-| `results/index.html` | Relatório visual com gráficos e tabela comparativa |
-| `results/reasoning_analysis.json` | Análise de reasoning por exemplo (formato JSON) |
-| `results/reasoning_analysis.txt` | Análise de reasoning por exemplo (formato legível) |
+| Arquivo                             | Descrição                                          |
+| ----------------------------------- | ---------------------------------------------------- |
+| `results/evaluations.csv`         | Histórico de todas as avaliações em formato CSV   |
+| `results/index.html`              | Relatório visual com gráficos e tabela comparativa |
+| `results/reasoning_analysis.json` | Análise de reasoning por exemplo (formato JSON)     |
+| `results/reasoning_analysis.txt`  | Análise de reasoning por exemplo (formato legível) |
 
 ---
 
